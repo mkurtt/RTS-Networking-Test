@@ -1,4 +1,5 @@
 using System;
+using Game.Scripts.Combat;
 using JetBrains.Annotations;
 using Mirror;
 using UnityEngine;
@@ -7,10 +8,26 @@ namespace Game.Scripts.Building
 {
     public class UnitSpawner : NetworkBehaviour, IPointerClickHandler
     {
+        [SerializeField] private Health _health;
         [SerializeField] private GameObject _unitPrefab;
         [SerializeField] private Transform _spawnPoint;
 
         #region Server
+        public override void OnStartServer()
+        {
+            _health.ServerOnDie += ServerHandleDie;
+        }
+
+        public override void OnStopServer()
+        {
+            _health.ServerOnDie -= ServerHandleDie;
+        }
+        
+        [Server]
+        private void ServerHandleDie()
+        {
+            //NetworkServer.Destroy(gameObject);
+        }
 
         [Command]
         private void CmdSpawnUnit()
@@ -20,14 +37,9 @@ namespace Game.Scripts.Building
             NetworkServer.Spawn(unitInstance, connectionToClient);
         }
         
-  #endregion
+        #endregion
 
         #region Client
-        
-        
-        
-  #endregion
-        
         
         public void OnPointerClick(PointerEventData eventData)
         {
@@ -37,5 +49,10 @@ namespace Game.Scripts.Building
             
             CmdSpawnUnit();
         }
+        
+  #endregion
+        
+        
+        
     }
 }

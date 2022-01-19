@@ -8,31 +8,32 @@ namespace Game.Scripts.Networking
     {
         private List<Unit> _myUnits = new List<Unit>();
 
+        public List<Unit> GetMyUnits => _myUnits;
+        
         #region Server
         
-        
-        public override void OnStartServer()
+        public override void OnStartAuthority()
         {
+            if (NetworkServer.active) return;
+            
             Unit.ServerOnUnitSpawned += ServerHandleUnitSpawned;
             Unit.ServerOnUnitDespawned += ServerHandleUnitDespawned;
         }
         
         public override void OnStopServer()
         {
+            if (NetworkServer.active) return;
+            
             Unit.ServerOnUnitSpawned -= ServerHandleUnitSpawned;
             Unit.ServerOnUnitDespawned -= ServerHandleUnitDespawned;
         }
         private void ServerHandleUnitSpawned(Unit unit)
         {
-            if (unit.connectionToClient.connectionId != connectionToClient.connectionId) return;
-            
             _myUnits.Add(unit);
         }
         
         private void ServerHandleUnitDespawned(Unit unit)
         {
-            if (unit.connectionToClient.connectionId != connectionToClient.connectionId) return;
-            
             _myUnits.Remove(unit);
         }
   #endregion
