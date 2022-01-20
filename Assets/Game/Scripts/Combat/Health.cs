@@ -1,4 +1,5 @@
 using System;
+using Game.Scripts.Buildings;
 using Mirror;
 using UnityEngine;
 namespace Game.Scripts.Combat
@@ -17,6 +18,19 @@ namespace Game.Scripts.Combat
         public override void OnStartServer()
         {
             _currentHealth = maxHealth;
+            UnitBase.ServerOnPlayerDie += ServerHandlePlayerDie;
+        }
+
+        public override void OnStopServer()
+        {
+            UnitBase.ServerOnPlayerDie += ServerHandlePlayerDie;
+        }
+        
+        private void ServerHandlePlayerDie(int connectionId)
+        {
+            if (connectionToClient.connectionId != connectionId) return;
+            
+            DealDamage(_currentHealth+1);
         }
 
         [Server]

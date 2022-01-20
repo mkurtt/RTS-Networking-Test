@@ -2,12 +2,13 @@ using System;
 using Game.Scripts.Combat;
 using Mirror;
 using UnityEngine;
-namespace Game.Scripts.Building
+namespace Game.Scripts.Buildings
 {
     public class UnitBase : NetworkBehaviour
     {
         [SerializeField] private Health _health;
 
+        public static event Action<int> ServerOnPlayerDie;
         public static event Action<UnitBase> ServerOnBaseSpawned;
         public static event Action<UnitBase> ServerOnBaseDespawned;
         
@@ -29,6 +30,7 @@ namespace Game.Scripts.Building
         [Server]
         private void ServerHandleDie()
         {
+            ServerOnPlayerDie?.Invoke(connectionToClient.connectionId);
             NetworkServer.Destroy(gameObject);
         }
         

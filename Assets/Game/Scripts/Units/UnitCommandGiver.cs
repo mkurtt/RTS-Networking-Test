@@ -1,3 +1,5 @@
+using System;
+using Game.Scripts.Buildings;
 using Game.Scripts.Combat;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -14,6 +16,12 @@ namespace Game.Scripts.Units
         private void Start()
         {
             _cam = Camera.main;
+            GameOverHandler.ClientOnGameOver += ClientHandleGameOver;
+        }
+
+        private void OnDisable()
+        {
+            GameOverHandler.ClientOnGameOver -= ClientHandleGameOver;
         }
 
         private void Update()
@@ -53,6 +61,11 @@ namespace Game.Scripts.Units
             {
                 unit.GetUnitMovement.CmdMove(hitInfoPoint);
             }
+        }
+        
+        private void ClientHandleGameOver(string winnerName)
+        {
+            enabled = false;
         }
     }
 }

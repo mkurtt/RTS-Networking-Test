@@ -1,5 +1,5 @@
 using System;
-using Game.Scripts.Building;
+using Game.Scripts.Buildings;
 using Mirror;
 using UnityEngine;
 using UnityEngine.SceneManagement;

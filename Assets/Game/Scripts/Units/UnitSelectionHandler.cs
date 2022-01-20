@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Game.Scripts.Buildings;
 using Game.Scripts.Networking;
 using Mirror;
 using UnityEngine;
@@ -25,11 +26,13 @@ namespace Game.Scripts.Units
             _cam = Camera.main;
 
             Unit.ClientOnUnitDespawned += ClientHandleUnitDespawned;
+            GameOverHandler.ClientOnGameOver += ClientHandleGameOver;
         }
 
         private void OnDestroy()
         {
             Unit.ClientOnUnitDespawned -= ClientHandleUnitDespawned;
+            GameOverHandler.ClientOnGameOver -= ClientHandleGameOver;
         }
 
         private void Update()
@@ -90,43 +93,53 @@ namespace Game.Scripts.Units
 
             if (_unitSelectionArea.sizeDelta.magnitude == 0)
             {
-                var ray = _cam.ScreenPointToRay(Mouse.current.position.ReadValue());
+                Ray ray = _cam.ScreenPointToRay(Mouse.current.position.ReadValue());
 
-                if (Physics.Raycast(ray, out var hit, Mathf.Infinity, _layerMask))
+                if (!Physics.Raycast(ray, out RaycastHit hit, Mathf.Infinity, _layerMask)) { return; }
+
+                if (!hit.collider.TryGetComponent<Unit>(out Unit unit)) { return; }
+
+                if (!unit.hasAuthority) { return; }
+
+                SelectedUnits.Add(unit);
+
+                foreach (Unit selectedUnit in SelectedUnits)
                 {
-                    if (hit.collider.TryGetComponent<Unit>(out var unit))
-                    {
-                        if (!unit.hasAuthority) return;
-
-                        SelectedUnits.Add(unit);
-                        foreach (var selectedunit in SelectedUnits)
-                        {
-                            selectedunit.Select();
-                        }
-                    }
+                    selectedUnit.Select();
                 }
+
                 return;
             }
 
             Vector2 min = _unitSelectionArea.anchoredPosition - (_unitSelectionArea.sizeDelta / 2);
             Vector2 max = _unitSelectionArea.anchoredPosition + (_unitSelectionArea.sizeDelta / 2);
 
-            foreach (var unit in _player.GetMyUnits)
+            foreach (Unit unit in _player.GetMyUnits)
             {
-                if (SelectedUnits.Contains(unit)) continue;
+                if (SelectedUnits.Contains(unit)) { continue; }
 
-                Vector3 screenPos = _cam.WorldToScreenPoint(unit.transform.position);
-                if (screenPos.x > min.x && screenPos.x < max.x && screenPos.y > min.y && screenPos.y < max.y)
+                Vector3 screenPosition = _cam.WorldToScreenPoint(unit.transform.position);
+
+                if (screenPosition.x > min.x &&
+                    screenPosition.x < max.x &&
+                    screenPosition.y > min.y &&
+                    screenPosition.y < max.y)
                 {
                     SelectedUnits.Add(unit);
                     unit.Select();
                 }
             }
         }
+
         
         private void ClientHandleUnitDespawned(Unit unit)
         {
             SelectedUnits.Remove(unit);
+        }
+
+        private void ClientHandleGameOver(string winnerName)
+        {
+            enabled = false;
         }
     }
 }

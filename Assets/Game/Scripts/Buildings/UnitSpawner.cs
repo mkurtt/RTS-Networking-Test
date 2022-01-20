@@ -1,10 +1,8 @@
-using System;
 using Game.Scripts.Combat;
-using JetBrains.Annotations;
 using Mirror;
 using UnityEngine;
 using UnityEngine.EventSystems;
-namespace Game.Scripts.Building
+namespace Game.Scripts.Buildings
 {
     public class UnitSpawner : NetworkBehaviour, IPointerClickHandler
     {
